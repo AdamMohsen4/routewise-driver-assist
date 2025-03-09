@@ -1,12 +1,19 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
-import { Menu, X, Home, MapPin, Clock, Cloud, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Menu, X, Home, MapPin, Clock, Cloud, User, Truck, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const isMobile = useIsMobile();
+  
+  // Close menu when changing routes
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -17,7 +24,7 @@ export default function NavBar() {
   };
   
   const navItems = [
-    { name: "Dashboard", path: "/", icon: <Home className="w-5 h-5 mr-2" /> },
+    { name: "Dashboard", path: "/dashboard", icon: <Home className="w-5 h-5 mr-2" /> },
     { name: "Routes", path: "/routes", icon: <MapPin className="w-5 h-5 mr-2" /> },
     { name: "Compliance", path: "/compliance", icon: <Clock className="w-5 h-5 mr-2" /> },
     { name: "Updates", path: "/updates", icon: <Cloud className="w-5 h-5 mr-2" /> },
@@ -30,7 +37,8 @@ export default function NavBar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
-              <img src="/images/truckwise-logo.svg" alt="TruckWise Logo" className="h-10 w-auto" />
+              <img src="/images/truckwise-icon.svg" alt="TruckWise" className="h-10 w-auto" />
+              {!isMobile && <span className="ml-2 text-lg font-semibold">TruckWise</span>}
             </Link>
           </div>
           
@@ -81,7 +89,7 @@ export default function NavBar() {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex items-center px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
+                "flex items-center px-3 py-3 rounded-md text-base font-medium transition-all duration-200",
                 location.pathname === item.path
                   ? "bg-primary/10 text-primary"
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
