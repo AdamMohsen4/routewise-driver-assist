@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-4">
-            <img src="/images/truckwise-logo.svg" alt="TruckWise Logo" className="h-10 w-auto" />
+            <img src="/images/truckwise-icon.svg" alt="TruckWise Logo" className="h-10 w-auto" />
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Optimizing routes and ensuring compliance for truck drivers across Sweden.
             </p>

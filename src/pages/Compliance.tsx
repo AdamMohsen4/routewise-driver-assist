@@ -4,13 +4,30 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Calendar, AlertTriangle } from 'lucide-react';
+import { Clock, Calendar, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import NearbyGasStations from '@/components/maps/NearbyGasStations';
 
 const Compliance = () => {
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
+
   return (
     <AppLayout>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Compliance Tracker</h1>
+        <div className="flex flex-wrap justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Compliance Tracker</h1>
+          <Button onClick={handleRefresh} size="sm" variant="outline" disabled={refreshing}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
         
         <Tabs defaultValue="daily">
           <TabsList className="grid grid-cols-3 w-full max-w-md mb-6">
@@ -45,9 +62,9 @@ const Compliance = () => {
                     <Progress value={67} className="h-2" />
                   </div>
                   
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-md flex items-start">
+                  <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-md flex items-start">
                     <AlertTriangle className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0 mt-0.5" />
-                    <p className="text-amber-800 text-sm">
+                    <p className="text-amber-800 dark:text-amber-300 text-sm">
                       You need to take a 15-minute break within the next hour to comply with regulations.
                     </p>
                   </div>
@@ -69,7 +86,7 @@ const Compliance = () => {
                       <p className="font-medium">Morning Break</p>
                       <p className="text-sm text-muted-foreground">10:15 - 10:30</p>
                     </div>
-                    <span className="text-green-600 text-sm font-medium">Completed</span>
+                    <span className="text-green-600 dark:text-green-400 text-sm font-medium">Completed</span>
                   </div>
                   
                   <div className="flex justify-between items-center">
@@ -77,7 +94,7 @@ const Compliance = () => {
                       <p className="font-medium">Lunch Break</p>
                       <p className="text-sm text-muted-foreground">13:00 - 13:45</p>
                     </div>
-                    <span className="text-green-600 text-sm font-medium">Completed</span>
+                    <span className="text-green-600 dark:text-green-400 text-sm font-medium">Completed</span>
                   </div>
                   
                   <div className="flex justify-between items-center">
@@ -85,11 +102,14 @@ const Compliance = () => {
                       <p className="font-medium">Afternoon Break</p>
                       <p className="text-sm text-muted-foreground">16:00 - 16:15</p>
                     </div>
-                    <span className="text-amber-600 text-sm font-medium">Upcoming</span>
+                    <span className="text-amber-600 dark:text-amber-400 text-sm font-medium">Upcoming</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Nearby Gas Stations Component */}
+            <NearbyGasStations />
           </TabsContent>
           
           <TabsContent value="weekly" className="space-y-6">
@@ -131,6 +151,9 @@ const Compliance = () => {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Nearby Gas Stations Component */}
+            <NearbyGasStations />
           </TabsContent>
           
           <TabsContent value="monthly" className="space-y-6">
@@ -148,23 +171,26 @@ const Compliance = () => {
                 <div className="mt-6 space-y-4">
                   <div className="flex justify-between items-center">
                     <span>Driving Hours Compliance</span>
-                    <span className="font-medium text-green-600">100%</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">100%</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Break Time Compliance</span>
-                    <span className="font-medium text-green-600">96%</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">96%</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Rest Period Compliance</span>
-                    <span className="font-medium text-amber-600">94%</span>
+                    <span className="font-medium text-amber-600 dark:text-amber-400">94%</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Documentation Compliance</span>
-                    <span className="font-medium text-green-600">100%</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">100%</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Nearby Gas Stations Component */}
+            <NearbyGasStations />
           </TabsContent>
         </Tabs>
       </div>

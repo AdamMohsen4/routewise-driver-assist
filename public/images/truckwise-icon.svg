@@ -1,7 +1,9 @@
 
 <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="100" height="100" rx="20" fill="#1A73E8"/>
-  <path d="M50 15L25 75H35L60 15H50Z" fill="white"/>
-  <path d="M70 15L45 75H55L80 15H70Z" fill="white"/>
-  <path d="M20 15L40 15L20 55L10 55L20 15Z" fill="#FF6D01"/>
+  <path d="M28 20C28 17.7909 29.7909 16 32 16H68C70.2091 16 72 17.7909 72 20V28H28V20Z" fill="#FF6D01"/>
+  <path d="M72 32H28V80C28 82.2091 29.7909 84 32 84H68C70.2091 84 72 82.2091 72 80V32Z" fill="#1A73E8"/>
+  <path d="M50 40L35 64H42L57 40H50Z" fill="white"/>
+  <path d="M60 40L45 64H52L67 40H60Z" fill="white"/>
+  <path d="M30 40L40 40L30 60L23 60L30 40Z" fill="#FF6D01"/>
 </svg>
