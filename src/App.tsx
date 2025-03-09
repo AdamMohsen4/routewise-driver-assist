@@ -3,10 +3,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
-import Routes from "./pages/Routes";
+import RoutesPage from "./pages/Routes";
 import Compliance from "./pages/Compliance";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -19,15 +19,15 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
+        <RouterRoutes>
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/routes" element={<Routes />} />
+          <Route path="/routes" element={<RoutesPage />} />
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/profile" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
+        </RouterRoutes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

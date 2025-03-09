@@ -1,9 +1,9 @@
 
 import React from 'react';
 import AppLayout from '@/components/layout/AppLayout';
-import { Dashboard as DashboardComponent } from '@/components/dashboard/Dashboard';
+import DashboardComponent from '@/components/dashboard/Dashboard';
 
-const Dashboard = () => {
+const DashboardPage = () => {
   return (
     <AppLayout>
       <div className="container mx-auto px-4 py-8">
@@ -14,4 +14,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default DashboardPage;

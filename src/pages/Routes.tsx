@@ -1,9 +1,9 @@
 
 import React from 'react';
 import AppLayout from '@/components/layout/AppLayout';
-import { RouteOptimizer } from '@/components/routes/RouteOptimizer';
+import RouteOptimizer from '@/components/routes/RouteOptimizer';
 
-const Routes = () => {
+const RoutesPage = () => {
   return (
     <AppLayout>
       <div className="container mx-auto px-4 py-8">
@@ -14,4 +14,4 @@ const Routes = () => {
   );
 };
 
-export default Routes;
+export default RoutesPage;
