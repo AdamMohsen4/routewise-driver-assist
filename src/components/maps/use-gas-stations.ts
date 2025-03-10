@@ -6,10 +6,12 @@ import { GasStation, Location } from './map-types';
 export function useGasStations() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
   const [stations, setStations] = useState<GasStation[]>([]);
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const markersRef = useRef<Array<google.maps.marker.AdvancedMarkerElement | google.maps.Marker>>([]);
 
   // Load Google Maps script
   useEffect(() => {
@@ -19,8 +21,11 @@ export function useGasStations() {
       return;
     }
 
+    // Reset any previous errors
+    setMapError(null);
+
     const googleMapsScript = document.createElement('script');
-    googleMapsScript.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB1DNXVI2S-kUTK02E6bLrnFOl-k7e8jkM&libraries=places,geometry&loading=async`;
+    googleMapsScript.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB1DNXVI2S-kUTK02E6bLrnFOl-k7e8jkM&libraries=places,geometry&loading=async&v=weekly`;
     googleMapsScript.async = true;
     googleMapsScript.defer = true;
     
@@ -30,17 +35,25 @@ export function useGasStations() {
     };
     
     googleMapsScript.onerror = () => {
-      setError("Failed to load Google Maps API. Please try again later.");
+      setMapError("Failed to load Google Maps API. Please try again later.");
       toast.error("Failed to load maps");
+    };
+    
+    // Set up error listener for Google Maps API errors
+    window.gm_authFailure = () => {
+      setMapError("Google Maps API key error: Billing is not enabled or the API is not activated. Please check your API key configuration.");
+      toast.error("Google Maps API key error");
     };
     
     document.head.appendChild(googleMapsScript);
     
     return () => {
-      // Only remove the script if it exists in the document
+      // Clean up
       if (document.head.contains(googleMapsScript)) {
         document.head.removeChild(googleMapsScript);
       }
+      // Remove the global error handler
+      window.gm_authFailure = null;
     };
   }, []);
 
@@ -70,15 +83,23 @@ export function useGasStations() {
     );
   }, []);
 
+  // Clear all markers from the map
+  const clearMarkers = useCallback(() => {
+    markersRef.current.forEach(marker => {
+      marker.map = null; // This removes the marker from the map
+    });
+    markersRef.current = [];
+  }, []);
+
   const findNearbyGasStations = useCallback(() => {
-    if (!mapLoaded || !userLocation || !mapInstanceRef.current) return;
+    if (!mapLoaded || !userLocation || !mapInstanceRef.current || mapError) return;
     
     setLoading(true);
     setStations([]);
+    clearMarkers();
     
     try {
-      // Create a dummy div for PlacesService if map doesn't render properly
-      const dummyElement = document.createElement('div');
+      // Use the map instance for PlacesService
       const service = new google.maps.places.PlacesService(mapInstanceRef.current);
       
       const request: google.maps.places.PlaceSearchRequest = {
@@ -104,19 +125,35 @@ export function useGasStations() {
               
               // Add marker for this gas station
               if (mapInstanceRef.current) {
-                new google.maps.Marker({
-                  position: placeLocation.toJSON(),
-                  map: mapInstanceRef.current,
-                  title: place.name,
-                  icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 8,
-                    fillColor: "#ff6d01",
-                    fillOpacity: 1,
-                    strokeWeight: 2,
-                    strokeColor: "#ffffff",
-                  },
-                });
+                try {
+                  // Try to use AdvancedMarkerElement if available (newer version)
+                  if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
+                    const marker = new google.maps.marker.AdvancedMarkerElement({
+                      map: mapInstanceRef.current,
+                      position: placeLocation.toJSON(),
+                      title: place.name,
+                    });
+                    markersRef.current.push(marker);
+                  } else {
+                    // Fallback to deprecated Marker
+                    const marker = new google.maps.Marker({
+                      position: placeLocation.toJSON(),
+                      map: mapInstanceRef.current,
+                      title: place.name,
+                      icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 8,
+                        fillColor: "#ff6d01",
+                        fillOpacity: 1,
+                        strokeWeight: 2,
+                        strokeColor: "#ffffff",
+                      },
+                    });
+                    markersRef.current.push(marker);
+                  }
+                } catch (markerError) {
+                  console.error("Error creating marker:", markerError);
+                }
               }
             }
             
@@ -142,13 +179,17 @@ export function useGasStations() {
       setLoading(false);
       console.error("Gas station search error:", e);
     }
-  }, [mapLoaded, userLocation]);
+  }, [mapLoaded, userLocation, mapError, clearMarkers]);
 
   const initializeMap = useCallback((mapRef: HTMLDivElement) => {
-    if (!mapLoaded || !userLocation || mapInstanceRef.current) return;
+    if (!mapLoaded || !userLocation || mapInstanceRef.current || mapError) return;
     
     try {
       console.log("Initializing map with location:", userLocation);
+      
+      // Clear any existing markers
+      clearMarkers();
+      
       const mapOptions: google.maps.MapOptions = {
         center: userLocation,
         zoom: 13,
@@ -167,32 +208,49 @@ export function useGasStations() {
       // Add marker for user location after map is fully loaded
       google.maps.event.addListenerOnce(mapElement, 'idle', () => {
         if (mapInstanceRef.current) {
-          new google.maps.Marker({
-            position: userLocation,
-            map: mapInstanceRef.current,
-            icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              scale: 10,
-              fillColor: "#1a73e8",
-              fillOpacity: 1,
-              strokeWeight: 2,
-              strokeColor: "#ffffff",
-            },
-            title: "Your Location",
-          });
-          
-          findNearbyGasStations();
+          try {
+            // Try to use AdvancedMarkerElement if available
+            if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
+              const marker = new google.maps.marker.AdvancedMarkerElement({
+                map: mapInstanceRef.current,
+                position: userLocation,
+                title: "Your Location",
+              });
+              markersRef.current.push(marker);
+            } else {
+              // Fallback to deprecated Marker
+              const marker = new google.maps.Marker({
+                position: userLocation,
+                map: mapInstanceRef.current,
+                icon: {
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 10,
+                  fillColor: "#1a73e8",
+                  fillOpacity: 1,
+                  strokeWeight: 2,
+                  strokeColor: "#ffffff",
+                },
+                title: "Your Location",
+              });
+              markersRef.current.push(marker);
+            }
+            
+            findNearbyGasStations();
+          } catch (markerError) {
+            console.error("Error creating user location marker:", markerError);
+          }
         }
       });
     } catch (e) {
-      setError(`Error initializing map: ${e instanceof Error ? e.message : String(e)}`);
+      setMapError(`Error initializing map: ${e instanceof Error ? e.message : String(e)}`);
       console.error("Map initialization error:", e);
     }
-  }, [mapLoaded, userLocation, findNearbyGasStations]);
+  }, [mapLoaded, userLocation, mapError, findNearbyGasStations, clearMarkers]);
 
   return {
     loading,
     error,
+    mapError,
     stations,
     userLocation,
     mapLoaded,

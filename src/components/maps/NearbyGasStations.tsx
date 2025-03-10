@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, MapPin, Fuel } from "lucide-react";
@@ -15,7 +15,8 @@ const NearbyGasStations = () => {
     userLocation,
     getUserLocation,
     initializeMap,
-    mapLoaded
+    mapLoaded,
+    mapError
   } = useGasStations();
   
   return (
@@ -33,7 +34,7 @@ const NearbyGasStations = () => {
         {!userLocation && (
           <Button 
             onClick={getUserLocation}
-            disabled={loading || !mapLoaded}
+            disabled={loading}
             className="w-full"
           >
             {loading ? (
@@ -50,7 +51,7 @@ const NearbyGasStations = () => {
           </Button>
         )}
         
-        {error && (
+        {error && !mapError && (
           <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">
             {error}
           </div>
@@ -58,7 +59,9 @@ const NearbyGasStations = () => {
         
         <MapDisplay 
           userLocation={userLocation} 
-          initializeMap={initializeMap} 
+          initializeMap={initializeMap}
+          mapError={mapError}
+          mapLoaded={mapLoaded}
         />
         
         <GasStationList stations={stations} />
