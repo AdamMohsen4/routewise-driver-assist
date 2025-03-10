@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from "sonner";
 import { GasStation, Location } from './map-types';
 
@@ -44,7 +44,7 @@ export function useGasStations() {
     };
   }, []);
 
-  const getUserLocation = () => {
+  const getUserLocation = useCallback(() => {
     setLoading(true);
     setError(null);
     
@@ -68,48 +68,9 @@ export function useGasStations() {
       },
       { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
     );
-  };
+  }, []);
 
-  const initializeMap = (mapRef: HTMLDivElement) => {
-    if (!mapLoaded || !userLocation) return;
-    
-    try {
-      const mapOptions: google.maps.MapOptions = {
-        center: userLocation,
-        zoom: 13,
-        styles: [
-          { elementType: "geometry", stylers: [{ color: "#f5f5f5" }] },
-          { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
-          { elementType: "labels.text.fill", stylers: [{ color: "#616161" }] },
-          { elementType: "labels.text.stroke", stylers: [{ color: "#f5f5f5" }] },
-        ],
-      };
-      
-      mapInstanceRef.current = new google.maps.Map(mapRef, mapOptions);
-      
-      // Add marker for user location
-      new google.maps.Marker({
-        position: userLocation,
-        map: mapInstanceRef.current,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: "#1a73e8",
-          fillOpacity: 1,
-          strokeWeight: 2,
-          strokeColor: "#ffffff",
-        },
-        title: "Your Location",
-      });
-      
-      findNearbyGasStations();
-    } catch (e) {
-      setError(`Error initializing map: ${e instanceof Error ? e.message : String(e)}`);
-      console.error("Map initialization error:", e);
-    }
-  };
-
-  const findNearbyGasStations = () => {
+  const findNearbyGasStations = useCallback(() => {
     if (!mapLoaded || !userLocation || !mapInstanceRef.current) return;
     
     setLoading(true);
@@ -177,7 +138,47 @@ export function useGasStations() {
       setLoading(false);
       console.error("Gas station search error:", e);
     }
-  };
+  }, [mapLoaded, userLocation]);
+
+  const initializeMap = useCallback((mapRef: HTMLDivElement) => {
+    if (!mapLoaded || !userLocation || mapInstanceRef.current) return;
+    
+    try {
+      console.log("Initializing map with location:", userLocation);
+      const mapOptions: google.maps.MapOptions = {
+        center: userLocation,
+        zoom: 13,
+        styles: [
+          { elementType: "geometry", stylers: [{ color: "#f5f5f5" }] },
+          { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#616161" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#f5f5f5" }] },
+        ],
+      };
+      
+      mapInstanceRef.current = new google.maps.Map(mapRef, mapOptions);
+      
+      // Add marker for user location
+      new google.maps.Marker({
+        position: userLocation,
+        map: mapInstanceRef.current,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 10,
+          fillColor: "#1a73e8",
+          fillOpacity: 1,
+          strokeWeight: 2,
+          strokeColor: "#ffffff",
+        },
+        title: "Your Location",
+      });
+      
+      findNearbyGasStations();
+    } catch (e) {
+      setError(`Error initializing map: ${e instanceof Error ? e.message : String(e)}`);
+      console.error("Map initialization error:", e);
+    }
+  }, [mapLoaded, userLocation, findNearbyGasStations]);
 
   return {
     loading,

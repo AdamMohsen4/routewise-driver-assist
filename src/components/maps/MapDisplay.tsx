@@ -12,18 +12,21 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ userLocation, initializeMap }) 
 
   useEffect(() => {
     if (mapRef.current && userLocation) {
+      // Only initialize map if we have a reference and a location
       initializeMap(mapRef.current);
     }
   }, [userLocation, initializeMap]);
 
-  if (!userLocation) return null;
+  if (!userLocation) {
+    return null;
+  }
   
   return (
     <div 
       ref={mapRef} 
-      className="w-full h-64 rounded-md overflow-hidden"
+      className="w-full h-64 rounded-md overflow-hidden border border-border"
     ></div>
   );
 };
 
-export default MapDisplay;
+export default React.memo(MapDisplay);

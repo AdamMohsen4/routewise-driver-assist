@@ -56,10 +56,12 @@ const NearbyGasStations = () => {
           </div>
         )}
         
-        <MapDisplay 
-          userLocation={userLocation} 
-          initializeMap={initializeMap} 
-        />
+        {userLocation && (
+          <MapDisplay 
+            userLocation={userLocation} 
+            initializeMap={initializeMap} 
+          />
+        )}
         
         <GasStationList stations={stations} />
       </CardContent>
