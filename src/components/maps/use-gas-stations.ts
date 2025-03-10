@@ -53,7 +53,7 @@ export function useGasStations() {
         document.head.removeChild(googleMapsScript);
       }
       // Remove the global error handler
-      window.gm_authFailure = null;
+      window.gm_authFailure = undefined;
     };
   }, []);
 
@@ -86,7 +86,11 @@ export function useGasStations() {
   // Clear all markers from the map
   const clearMarkers = useCallback(() => {
     markersRef.current.forEach(marker => {
-      marker.map = null; // This removes the marker from the map
+      if (marker instanceof google.maps.Marker) {
+        marker.setMap(null); // For classic Marker
+      } else if (marker instanceof google.maps.marker.AdvancedMarkerElement) {
+        marker.map = null; // For AdvancedMarkerElement
+      }
     });
     markersRef.current = [];
   }, []);
