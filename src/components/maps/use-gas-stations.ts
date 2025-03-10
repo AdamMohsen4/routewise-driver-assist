@@ -20,7 +20,7 @@ export function useGasStations() {
     }
 
     const googleMapsScript = document.createElement('script');
-    googleMapsScript.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB1DNXVI2S-kUTK02E6bLrnFOl-k7e8jkM&libraries=places,geometry`;
+    googleMapsScript.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB1DNXVI2S-kUTK02E6bLrnFOl-k7e8jkM&libraries=places,geometry&loading=async`;
     googleMapsScript.async = true;
     googleMapsScript.defer = true;
     
@@ -77,6 +77,8 @@ export function useGasStations() {
     setStations([]);
     
     try {
+      // Create a dummy div for PlacesService if map doesn't render properly
+      const dummyElement = document.createElement('div');
       const service = new google.maps.places.PlacesService(mapInstanceRef.current);
       
       const request: google.maps.places.PlaceSearchRequest = {
@@ -101,19 +103,21 @@ export function useGasStations() {
               distance = `${(distanceInMeters / 1000).toFixed(1)} km`;
               
               // Add marker for this gas station
-              new google.maps.Marker({
-                position: placeLocation.toJSON(),
-                map: mapInstanceRef.current!,
-                title: place.name,
-                icon: {
-                  path: google.maps.SymbolPath.CIRCLE,
-                  scale: 8,
-                  fillColor: "#ff6d01",
-                  fillOpacity: 1,
-                  strokeWeight: 2,
-                  strokeColor: "#ffffff",
-                },
-              });
+              if (mapInstanceRef.current) {
+                new google.maps.Marker({
+                  position: placeLocation.toJSON(),
+                  map: mapInstanceRef.current,
+                  title: place.name,
+                  icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 8,
+                    fillColor: "#ff6d01",
+                    fillOpacity: 1,
+                    strokeWeight: 2,
+                    strokeColor: "#ffffff",
+                  },
+                });
+              }
             }
             
             return {
@@ -156,24 +160,30 @@ export function useGasStations() {
         ],
       };
       
-      mapInstanceRef.current = new google.maps.Map(mapRef, mapOptions);
+      // Create the map instance
+      const mapElement = new google.maps.Map(mapRef, mapOptions);
+      mapInstanceRef.current = mapElement;
       
-      // Add marker for user location
-      new google.maps.Marker({
-        position: userLocation,
-        map: mapInstanceRef.current,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: "#1a73e8",
-          fillOpacity: 1,
-          strokeWeight: 2,
-          strokeColor: "#ffffff",
-        },
-        title: "Your Location",
+      // Add marker for user location after map is fully loaded
+      google.maps.event.addListenerOnce(mapElement, 'idle', () => {
+        if (mapInstanceRef.current) {
+          new google.maps.Marker({
+            position: userLocation,
+            map: mapInstanceRef.current,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 10,
+              fillColor: "#1a73e8",
+              fillOpacity: 1,
+              strokeWeight: 2,
+              strokeColor: "#ffffff",
+            },
+            title: "Your Location",
+          });
+          
+          findNearbyGasStations();
+        }
       });
-      
-      findNearbyGasStations();
     } catch (e) {
       setError(`Error initializing map: ${e instanceof Error ? e.message : String(e)}`);
       console.error("Map initialization error:", e);

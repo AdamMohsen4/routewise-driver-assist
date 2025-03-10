@@ -18,13 +18,18 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ userLocation, initializeMap }) 
   }, [userLocation, initializeMap]);
 
   if (!userLocation) {
-    return null;
+    return (
+      <div className="w-full h-64 rounded-md flex items-center justify-center bg-muted">
+        <p className="text-muted-foreground">Please enable location to view the map</p>
+      </div>
+    );
   }
   
   return (
     <div 
       ref={mapRef} 
       className="w-full h-64 rounded-md overflow-hidden border border-border"
+      id="map-container"
     ></div>
   );
 };
